@@ -337,9 +337,34 @@ cat - > $CONFSCRIPT <<< "\
 ProgressReport 0 "Patching /usr/sbin/xe-linux-distribution"
 cd /usr/sbin
 patch <<< "\
---- xe-linux-distribution       2016-11-02 16:24:23.292055647 -0700
-+++ xe-linux-distribution.gentoo   2016-11-02 16:25:49.121644055 -0700
-@@ -324,6 +324,7 @@
+--- xe-linux-distribution       2016-11-02 16:37:34.523484969 -0700
++++ xe-linux-distribution.gentoo  2016-11-02 16:40:08.434546532 -0700
+@@ -285,6 +285,24 @@
+
+ }
+
++identify_gentoo()
++{
++       gentoo_release="$1"
++       if [ ! -e "${gentoo_release}" ] ; then
++               return 1
++       fi
++       distro="gentoo"
++       eval $(cat ${gentoo_release} | awk '{ print "release=" $5 }' )
++       if [ -z "${release}" ] ; then
++               return 1
++       fi
++       eval $(echo $release | awk -F. -- '{ print "major=" $1 ; print "minor=" $2 }' )
++       if [ -z "${major}" -o -z "$minor" ] ; then
++               return 1
++       fi
++       write_to_output "${distro}" "${major}" "${minor}" "${distro}"
++}
++
+ if [ $# -eq 1 ] ; then
+     exec 1>"$1"
+ fi
+@@ -298,6 +316,7 @@
      identify_lsb    lsb_release         && exit 0
      identify_debian /etc/debian_version && exit 0
      identify_boot2docker /etc/boot2docker && exit 0
